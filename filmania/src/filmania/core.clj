@@ -39,7 +39,6 @@
 
 (def movies (movie-map (rest (csv-seq movie-filename))))
 
-
 (count movies)
 
 (take 10 movies)
@@ -66,4 +65,44 @@
 
 (filter #(= (nth % 1) (reduce min (vals (card-genres movies)))) (card-genres movies))
 
-(csv-seq "resources/ml-latest-small/ratings.csv")
+(defn get-map-id [s id]
+  (loop [s s id id res (sorted-map)]
+    (if (seq s)
+      (if (= id (first (first s)))
+        (recur (rest s) id (assoc res (Integer/parseInt (nth (first s) 1)) (Double/parseDouble (nth (first s) 2))))
+        res)
+      res)))
+
+
+(defn parse-ratings [s]
+  (if (seq s)
+    (into (sorted-map) (lazy-seq (let [id (first (first s)) m (get-map-id s id)] (cons [(Integer/parseInt id) m] (parse-ratings (nthrest s (count m)))))))))
+
+
+
+(def ratings (parse-ratings (rest (csv-seq "resources/ml-latest-small/ratings.csv"))))
+
+(take 10 (get ratings 1))
+
+(s/union (into #{} (keys movies)) (reduce s/union #{} (map #(into #{} (keys (val %))) ratings)))
+
+(defn movie-avg-ratings []
+  (let [s (into #{} (keys movies)) m
+    (loop [tmp s res {}]
+      (if (seq tmp)
+        (recur (rest tmp) (assoc res (first tmp) [0 0]))
+        res))]
+    (loop [tmp ratings res m]
+      (if (seq tmp)
+          (recur (rest tmp)
+                 (loop [rates (val (first tmp)) r res]
+                    (if (seq rates)
+                      (if (contains? s (key (first rates)))
+                        (recur (rest rates) (assoc r (key (first rates)) [(+ (val (first rates)) (nth (get r (key (first rates))) 0)) (inc (nth (get r (key (first rates))) 1))]))
+                        (recur (rest rates) r))
+                      r)))
+        res))))
+
+(movie-avg-ratings)
+
+
