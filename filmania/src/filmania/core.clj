@@ -61,6 +61,7 @@
   (if (seq base)
     (into {} (map #(vec [% (count (films-by-genre % base))]) (all-genres base)))))
 
+
 (filter #(= (nth % 1) (reduce max (vals (card-genres movies)))) (card-genres movies))
 
 (filter #(= (nth % 1) (reduce min (vals (card-genres movies)))) (card-genres movies))
@@ -110,16 +111,29 @@
             r))))))
 
 
-average-ratings
+
 
 (def average-ratings (movie-avg-ratings))
 
-(sort-by val > average-ratings)
+(sort-by val > average-ratings);; films les mieux notés
 
-(sort-by val < average-ratings)
+(sort-by val < average-ratings);; films les moins bien notés
 
-(/ (reduce + (vals average-ratings)) (count average-ratings))
+(/ (reduce + (vals average-ratings)) (count average-ratings)) ;; note moyenne de la base de films
 
+(defn take-best-rated [avg l]
+  (loop [l l res[]]
+    (if (seq l)
+      (if (>= (second (first l)) avg)
+        (recur (rest l) (conj res (first (first l))))
+        res))))
+
+(defn take-worst-rated [avg l]
+  (loop [l l res[]]
+    (if (seq l)
+      (if (< (second (first l)) avg)
+        (recur (rest l) (conj res (first (first l))))
+        res))))
 
 
 (defn users-avg-ratings []
@@ -130,13 +144,29 @@ average-ratings
 
 (def user-ratings (users-avg-ratings))
 
-(sort-by val > user-ratings)
+(sort-by val > user-ratings);; les utilisateurs du plus au moins sympatique
 
-(sort-by val < user-ratings)
+(sort-by val < user-ratings);; les utilisateurs du plus au moins critique
 
 (def Sci-Fi (into #{} (keys (filter #(contains? (get (nth % 1) :genres) "Sci-Fi") movies))))
 
+(sort-by val > (filter #(contains? Sci-Fi (key %)) average-ratings));;films de Sci-Fi des mieux au moins bien noté
 
-(sort-by val > (filter #(contains? Sci-Fi (key %)) average-ratings))
+(sort-by val < (filter #(contains? Sci-Fi (key %)) average-ratings));;films de Sci-Fi des moins bien au mieux noté
 
-(sort-by val < (filter #(contains? Sci-Fi (key %)) average-ratings))
+(defn take-friendly-users [avg l]
+  (loop [l l res[]]
+    (if (seq l)
+      (if (>= (second (first l)) avg)
+        (recur (rest l) (conj res (first (first l))))
+        res))))
+
+(defn take-crit-users [avg l]
+  (loop [l l res[]]
+    (if (seq l)
+      (if (< (second (first l)) avg)
+        (recur (rest l) (conj res (first (first l))))
+        res))))
+
+
+
