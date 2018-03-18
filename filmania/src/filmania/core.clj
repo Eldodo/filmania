@@ -90,7 +90,7 @@
   (let [s (into #{} (keys movies)) m
     (loop [tmp s res {}]
       (if (seq tmp)
-        (recur (rest tmp) (assoc res (first tmp) [0 0]))
+        (recur (rest tmp) (assoc res (first tmp) [0 0.0]))
         res))]
     (loop [tmp ratings res m]
       (if (seq tmp)
@@ -105,12 +105,17 @@
           (loop [res res r {}]
           (if (seq res)
             (if (zero? (nth (val (first res)) 1))
-              (recur (rest res) (assoc r (key (first res)) 0))
+              (recur (rest res) (assoc r (key (first res)) 0.0))
               (recur (rest res) (assoc r (key (first res)) (quot (nth (val (first res)) 0) (nth (val (first res)) 1)))))
             r))))))
 
-(movie-avg-ratings)
 
+(def average-ratings (movie-avg-ratings))
 
+(sort-by val > average-ratings)
 
+(sort-by val < average-ratings)
 
+(/ (reduce + (vals average-ratings)) (count average-ratings))
+
+ratings
