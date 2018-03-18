@@ -106,9 +106,11 @@
           (if (seq res)
             (if (zero? (nth (val (first res)) 1))
               (recur (rest res) (assoc r (key (first res)) 0.0))
-              (recur (rest res) (assoc r (key (first res)) (quot (nth (val (first res)) 0) (nth (val (first res)) 1)))))
+              (recur (rest res) (assoc r (key (first res)) (/ (nth (val (first res)) 0) (nth (val (first res)) 1)))))
             r))))))
 
+
+average-ratings
 
 (def average-ratings (movie-avg-ratings))
 
@@ -118,4 +120,23 @@
 
 (/ (reduce + (vals average-ratings)) (count average-ratings))
 
-ratings
+
+
+(defn users-avg-ratings []
+  (loop [tmp ratings res {}]
+    (if (seq tmp)
+      (recur (rest tmp) (assoc res (key (first tmp)) (/ (reduce + (vals (val (first tmp)))) (count (vals (val (first tmp)))))))
+      res)))
+
+(def user-ratings (users-avg-ratings))
+
+(sort-by val > user-ratings)
+
+(sort-by val < user-ratings)
+
+(def Sci-Fi (into #{} (keys (filter #(contains? (get (nth % 1) :genres) "Sci-Fi") movies))))
+
+
+(sort-by val > (filter #(contains? Sci-Fi (key %)) average-ratings))
+
+(sort-by val < (filter #(contains? Sci-Fi (key %)) average-ratings))
