@@ -101,8 +101,16 @@
                         (recur (rest rates) (assoc r (key (first rates)) [(+ (val (first rates)) (nth (get r (key (first rates))) 0)) (inc (nth (get r (key (first rates))) 1))]))
                         (recur (rest rates) r))
                       r)))
-        res))))
+
+          (loop [res res r {}]
+          (if (seq res)
+            (if (zero? (nth (val (first res)) 1))
+              (recur (rest res) (assoc r (key (first res)) 0))
+              (recur (rest res) (assoc r (key (first res)) (quot (nth (val (first res)) 0) (nth (val (first res)) 1)))))
+            r))))))
 
 (movie-avg-ratings)
+
+
 
 
